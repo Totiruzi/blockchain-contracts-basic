@@ -1,30 +1,47 @@
-const ethers = require('ethers');
-const fs = require('fs');
-require('dotenv').config();
+const ethers = require("ethers")
+const fs = require("fs")
+require("dotenv").config()
 
 async function main() {
   // compile contracts in our code
   // compile them seperately
   // http://127.0.0.1:7545
-  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL)
+
+  // creating a wallet without using encryption
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-  const abi = fs.readFileSync('./SimpleStorage_sol_SimpleStorage.abi', 'utf8');
-  const bytecode = fs.readFileSync('./SimpleStorage_sol_SimpleStorage.bin', 'utf8');
-  
+
+  // encrypting your private key, password and remove it from .env file
+  /*
+  const encryptedJson = fs.readFileSync("./encryptedKey.json", "utf8")
+  let wallet = new ethers.Wallet.fromEncryptedJsonSync(
+    encryptedJson,
+    process.env.PRIVATE_KEY_PASSWORD
+  )
+  wallet = await wallet.connect(provider)
+  */
+
+  const abi = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.abi", "utf8")
+  const bytecode = fs.readFileSync(
+    "./SimpleStorage_sol_SimpleStorage.bin",
+    "utf8"
+  )
+
   // A contract factory is a JavaScript object that is able to deploy a contract on the blockchain.
-  const contractFactory = new ethers.ContractFactory(abi, bytecode, wallet);
+  const contractFactory = new ethers.ContractFactory(abi, bytecode, wallet)
 
   // Deploy a contract
-  console.log('Please wait while the contract is being deployed...'); 
-  const contract = await contractFactory.deploy();
-  console.log(contract);
+  console.log("Please wait while the contract is being deployed...")
+  const contract = await contractFactory.deploy()
+  console.log(contract)
 
   // Get the address of the contract
-  console.log('Contract deployed at:', contract.address);
+  console.log("Contract deployed at:", contract.address)
 
   // Get the transaction hash of the deployment
-  const transactionRecipt = await contract.deployTransaction.wait(1);
-  console.log(transactionRecipt); //what you get when you wait for a block to deploy!
+  const transactionRecipt = await contract.deployTransaction.wait(1)
+  console.log(transactionRecipt) //what you get when you wait for a block to deploy!
+  console.log(`Contract Address: ${contract.address}`)
 
   /* 
 
@@ -49,18 +66,17 @@ async function main() {
   console.log(sentTxResponse);
   */
 
-  const currentFavoriteNumber = await contract.retrieve();
+  const currentFavoriteNumber = await contract.retrieve()
   console.log(`Current Favorite Number: ${currentFavoriteNumber.toString()}`)
-  const transactionResponse = await contract.store(4);
-  const transactionRecipte = await transactionResponse.wait(1);
+  const transactionResponse = await contract.store(4)
+  const transactionRecipte = await transactionResponse.wait(1)
   const updatedFavoriteNumber = await contract.retrieve()
-  console.log(`UpdatedFavoriteNUmber: ${updatedFavoriteNumber}`);
-
+  console.log(`UpdatedFavoriteNUmber: ${updatedFavoriteNumber}`)
 }
 
 main()
   .then(() => process.exit(0))
-  .catch(err => {
-    console.error(err);
-    process.exit(1);
+  .catch((err) => {
+    console.error(err)
+    process.exit(1)
   })
